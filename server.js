@@ -4,15 +4,16 @@ dotenv.config(); // ✅ Load environment variables
 import express from 'express';
 import 'dotenv/config';
 
-// ✅ Import Middleware (Make sure folder name matches exactly!)
+// ✅ Import Middleware
 import logMiddleware from './src/middlewarre/logMiddleware.js';
 import errorHandler from './src/middlewarre/errorHandler.js';
 import authMiddleware from './src/middlewarre/authMiddleware.js';
 import advancedAuth from './src/middlewarre/advancedAuth.js';
 
-// ✅ Import Routes (Corrected path based on `routes/` inside `src/`)
-import usersRouter from './src/routes/users.js';
+// ✅ Import Routes (Use Clients and Workers instead of Users)
+import clientsRouter from './src/routes/clients.js';
 import tasksRouter from './src/routes/tasks.js';
+import workersRouter from './src/routes/workers.js'; 
 
 const app = express();
 
@@ -26,8 +27,9 @@ app.use(authMiddleware); // ✅ Authentication middleware
 //---------------------------
 // Routes
 //---------------------------
-app.use('/users', usersRouter);
-app.use('/tasks', tasksRouter);
+app.use('/api/clients', clientsRouter);
+app.use('/api/tasks', tasksRouter);
+app.use('/api/workers', workersRouter);
 
 //---------------------------
 // Test Route
