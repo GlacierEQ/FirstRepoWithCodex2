@@ -1,49 +1,68 @@
 {
-  "users": [
+  "clients": [
     {
-      "username": "jdoe",
-      "password": "password123",
-      "name": "John Doe",
-      "role": "client",
-      "email": "johndoe@example.com",
-      "phoneNumber": "123-456-7890",
-      "profilePicture": "https://global-uploads.webflow.com/5eecfecbe625d195e35b89f2/624bfb093da7d92733c001c0_Ignacio%20Villafruela%20Rodr%C3%ADguez.jpg"
+      "username": "jbolivar",
+      "auth0Id": "auth0|676613a9c24a404914d51f3c",
+      "name": "Junier Bolivar",
+      "email": "junierba@gmail.com",
+      "phoneNumber": "0031-020-341-1691",
+      "profilePicture": "https://example.com/your-profile-pic.jpg",
+      "role": "admin"
     },
     {
+      "username": "jdoe",
+      "auth0Id": "auth0|680e09b496d2591a788d606a",
+      "name": "John Doe",
+      "email": "johndoe@example.com",
+      "phoneNumber": "123-456-7890",
+      "profilePicture": "https://example.com/jdoe-profile-pic.jpg",
+      "role": "client"
+    },
+
+    {
       "username": "asimpson",
-      "password": "password234",
+      "auth0Id": "auth0|688fad75e46024dabcaf914e",
       "name": "Anna Simpson",
-      "role": "client",
       "email": "annasimpson@example.com",
       "phoneNumber": "123-456-7891",
-      "profilePicture": "https://example.com/asimpson-profile-pic.jpg"
+      "profilePicture": "https://example.com/asimpson-profile-pic.jpg",
+      "role": "client"
     },
     {
       "username": "rjames",
-      "password": "password345",
+      "auth0Id": "auth0|688fad924ab4a02e52bae573",
       "name": "Robert James",
-      "role": "client",
       "email": "robertjames@example.com",
       "phoneNumber": "123-456-7892",
-      "profilePicture": "https://example.com/rjames-profile-pic.jpg"
+      "profilePicture": "https://example.com/rjames-profile-pic.jpg",
+      "role": "client"
     },
     {
       "username": "klopez",
-      "password": "password456",
+      "auth0Id": "auth0|688fadb1fff3bd0a31acb02d",
       "name": "Karen Lopez",
-      "role": "client",
       "email": "karenlopez@example.com",
       "phoneNumber": "123-456-7893",
-      "profilePicture": "https://example.com/klopez-profile-pic.jpg"
+      "profilePicture": "https://example.com/klopez-profile-pic.jpg",
+      "role": "client"
     },
     {
       "username": "smiller",
-      "password": "password567",
+      "auth0Id": "auth0|688fadc4cfbb2ca579256246",
       "name": "Steve Miller",
-      "role": "client",
       "email": "stevemiller@example.com",
       "phoneNumber": "123-456-7894",
-      "profilePicture": "https://example.com/smiller-profile-pic.jpg"
+      "profilePicture": "https://example.com/smiller-profile-pic.jpg",
+      "role": "client"
+    },
+    {
+      "username": "sbrown",
+      "auth0Id": "auth0|680e8f978a2cac0246013b15",
+      "name": "Steve Miller",
+      "email": "sarabrown@example.com",
+      "phoneNumber": "123-456-7699",
+      "profilePicture": "https://example.com/brown-profile-pic.jpg",
+      "role": "client"
     }
   ]
 }

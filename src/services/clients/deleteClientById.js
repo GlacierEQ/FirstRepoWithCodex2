@@ -1,34 +1,47 @@
-import { PrismaClient } from '@prisma/client'; // Import Prisma Client
+import { PrismaClient } from '@prisma/client'; // ⭐ Import Prisma Client
 
-const prisma = new PrismaClient(); // Initialize Prisma Client
+const prisma = new PrismaClient(); // ⭐ Initialize Prisma Client
 
 /**
- * Deletes a client by their ID.
+ * ❌ Deletes a client by their ID, with proper authorization check.
+ * 
  * @param {string} id - The ID of the client to delete.
+ * @param {object} currentUser - The authenticated user (used for permission check).
  * @returns {object|null} - The deleted client object or null if not found.
  */
-const deleteClientById = async (id) => {
+const deleteClientById = async (id, currentUser) => {
   try {
-    // ✅ Check if the client exists in the database
+    // ⭐ Step 1: Fetch the client by ID
     const existingClient = await prisma.client.findUnique({
-      where: { id }, // Look up the client by ID
+      where: { id },
     });
 
     if (!existingClient) {
       console.warn(`⚠️ Client with ID ${id} not found.`);
-      return null; // Return null if client does not exist
+      return null;
     }
 
-    // ✅ Delete the client from the database
+    // ⭐ Step 2: Authorization check
+    const isSelf = currentUser?.id === existingClient.id;
+    const isAdmin = currentUser?.isAdmin === true;
+
+    if (!isSelf && !isAdmin) {
+      const error = new Error('🚫 You are not authorized to delete this client.');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    // ⭐ Step 3: Delete the client
     const deletedClient = await prisma.client.delete({
-      where: { id }, // Specify the client to delete by ID
+      where: { id },
     });
 
     console.log(`✅ Client with ID ${id} successfully deleted:`, deletedClient);
     return deletedClient;
+
   } catch (error) {
     console.error(`❌ Error deleting client with ID ${id}:`, error.message);
-    throw new Error('Failed to delete client.');
+    throw error;
   }
 };
 

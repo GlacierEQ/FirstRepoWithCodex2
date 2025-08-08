@@ -1,4 +1,13 @@
 import Joi from 'joi';
+// ✅ Use default import for CommonJS compatibility
+import pkg from '@prisma/client'; //...you’re importing from a generated package that Prisma builds for you based on your schema.prisma. 🎯 So where does @prisma/client come from?  It’s generated into the following folder:node_modules/@prisma/client
+
+const { TaskCategory, TaskStatus } = pkg; // 🟢 Extract enums from default export
+
+
+// 🟢 Enum values as arrays (to avoid hardcoding)
+const validCategories = Object.values(TaskCategory); // 🟢
+const validStatuses = Object.values(TaskStatus); // 🟢
 
 // ✅ Common schema for all users (clients & workers)
 const commonSchema = {
@@ -48,27 +57,54 @@ export const workerSchema = Joi.object({
     'array.base': 'Skills must be an array of strings.',
     'array.min': 'At least one skill is required.',
   }),
-  experienceYears: Joi.number()
-    .integer()
-    .min(0)
-    .messages({
-      'number.base': 'Experience (years) must be a valid number.',
-      'number.min': 'Experience (years) cannot be negative.',
-    }),
-  experienceMonths: Joi.number()
-    .integer()
-    .min(0)
-    .max(11) // ✅ Months should be between 0-11
-    .messages({
-      'number.base': 'Experience (months) must be a valid number.',
-      'number.min': 'Experience (months) cannot be negative.',
-      'number.max': 'Experience (months) must be between 0 and 11.',
-    }),
+  experienceYears: Joi.number().integer().min(0).messages({
+    'number.base': 'Experience (years) must be a valid number.',
+    'number.min': 'Experience (years) cannot be negative.',
+  }),
+  experienceMonths: Joi.number().integer().min(0).max(11).messages({
+    'number.base': 'Experience (months) must be a valid number.',
+    'number.min': 'Experience (months) cannot be negative.',
+    'number.max': 'Experience (months) must be between 0 and 11.',
+  }),
 }).custom((value, helpers) => {
-  // 🔥 Ensure at least one of `experienceYears` or `experienceMonths` is provided
-  if ((value.experienceYears === undefined || value.experienceYears === null) &&
-      (value.experienceMonths === undefined || value.experienceMonths === null)) {
+  if (
+    (value.experienceYears === undefined || value.experienceYears === null) &&
+    (value.experienceMonths === undefined || value.experienceMonths === null)
+  ) {
     return helpers.message('At least one of experienceYears or experienceMonths is required.');
   }
   return value;
+});
+
+// ✅ Task Validation Schema
+export const taskSchema = Joi.object({
+  title: Joi.string().min(3).required().messages({
+    'string.empty': 'Title is required.',
+    'string.min': 'Title must be at least 3 characters long.',
+  }),
+  description: Joi.string().min(8).required().messages({
+    'string.empty': 'Description is required.',
+    'string.min': 'Description must be at least 8 characters long.',
+  }),
+  category: Joi.string()
+    .valid(...validCategories) // 🟢 Dynamically pulled from enum
+    .required()
+    .messages({
+      'any.only': '❌ Category must be one of the predefined options.',
+      'string.empty': 'Category is required.',
+    }),
+  status: Joi.string()
+    .valid(...validStatuses) // 🟢 Dynamically pulled from enum
+    .default('open')
+    .messages({
+      'any.only': '⭐ Status must be one of the allowed options.',
+    }),
+  price: Joi.number().positive().required().messages({
+    'number.base': 'Price must be a valid number.',
+    'number.positive': 'Price must be greater than 0.',
+  }),
+  dueDate: Joi.date().iso().required().messages({
+    'date.base': 'Due Date must be a valid date.',
+    'date.format': 'Due Date must be in ISO format (YYYY-MM-DDTHH:mm:ssZ).',
+  }),
 });

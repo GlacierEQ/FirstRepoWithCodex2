@@ -1,0 +1,64 @@
+{
+  "tasks": [
+    {
+      "title": "Fix Leaking Pipe",
+      "description": "The kitchen sink is leaking and needs urgent repair.",
+      "category": "plumbing",
+      "status": "open",
+      "price": 50.0,
+      "dueDate": "2024-03-10T12:00:00Z",
+      "clientEmail": "junierba@gmail.com",
+      "clientId": "1",
+      "workerEmail": "joeplumber@example.com",
+      "workerId": "w1"
+    },
+    {
+      "title": "Paint Room",
+      "description": "The walls need a fresh coat of white paint.",
+      "category": "room_painting",
+      "status": "assigned",
+      "price": 120.0,
+      "dueDate": "2024-03-15T10:00:00Z",
+      "clientEmail": "johndoe@example.com",
+      "clientId": "2",
+      "workerEmail": "alicebrown@example.com",
+      "workerId": "w5"
+    },
+    {
+      "title": "Assemble Furniture",
+      "description": "Need help assembling an IKEA bookshelf.",
+      "category": "furniture_assembly",
+      "status": "completed",
+      "price": 75.0,
+      "dueDate": "2024-03-12T14:30:00Z",
+      "clientEmail": "annasimpson@example.com",
+      "clientId": "3",
+      "workerEmail": "handymanmike@example.com",
+      "workerId": "w4"
+    },
+    {
+      "title": "Install New Light Fixtures",
+      "description": "Replace all old ceiling lamps with modern LED lights in the entire house.",
+      "category": "electricity",
+      "status": "open",
+      "price": 200.0,
+      "dueDate": "2024-03-20T09:00:00Z",
+      "clientEmail": "robertjames@example.com",
+      "clientId": "4",
+      "workerEmail": "lisachen@example.com",
+      "workerId": "w3"
+    },
+    {
+      "title": "Build Custom Wooden Table",
+      "description": "Craft a high-quality wooden dining table from scratch.",
+      "category": "carpentry",
+      "status": "open",
+      "price": 350.0,
+      "dueDate": "2024-03-25T16:00:00Z",
+      "clientEmail": "karenlopez@example.com",
+      "clientId": "5",
+      "workerEmail": "alicebrown@example.com",
+      "workerId": "w5"
+    }
+  ]
+}

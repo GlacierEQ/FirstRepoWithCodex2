@@ -4,7 +4,8 @@ import { workerSchema } from '../../utils/validationSchema.js';
 const prisma = new PrismaClient();
 
 /**
- * Creates a new worker in the database
+ * Creates a new worker in the database with full validation.
+ * Prevents duplicate records and ensures required fields are present.
  * @param {string} username - The unique username of the worker
  * @param {string} name - The full name of the worker
  * @param {string} password - The worker's password (should be hashed in production)
@@ -12,13 +13,14 @@ const prisma = new PrismaClient();
  * @param {string} phoneNumber - The worker's contact number
  * @param {string} profilePicture - The worker's profile picture (Required)
  * @param {Array<string>} skills - The worker's list of skills (At least 1 required)
- * @param {number} experienceYears - Worker’s experience in years (Required if experienceMonths is missing)
- * @param {number} experienceMonths - Worker’s experience in months (Required if experienceYears is missing, 0-11)
+ * @param {number} experienceYears - Worker’s experience in years (Optional, exclusive with experienceMonths)
+ * @param {number} experienceMonths - Worker’s experience in months (Optional, exclusive with experienceYears, 0-11)
  * @returns {Promise<Object>} - The newly created worker object
  */
-const createWorker = async (username, name, password, email, phoneNumber, profilePicture, skills, experienceYears, experienceMonths) => {
+const createWorker = async (
+  username, name, password, email, phoneNumber, profilePicture, skills, experienceYears, experienceMonths
+) => {
   try {
-    // 🚀 Log incoming request data before validation
     console.log('📥 Incoming worker data:', { username, name, password, email, phoneNumber, profilePicture, skills, experienceYears, experienceMonths });
 
     // ✅ Ensure required fields are present
@@ -31,46 +33,42 @@ const createWorker = async (username, name, password, email, phoneNumber, profil
     if (!profilePicture) missingFields.push('profilePicture');
     if (!skills || skills.length === 0) missingFields.push('skills');
 
-    // ✅ Ensure at least one experience field is provided (MANDATORY)
-    if (experienceYears === undefined && experienceMonths === undefined) {
-      missingFields.push('experienceYears or experienceMonths');
+    // ✅ Ensure only one experience field is provided (MANDATORY RULE!)
+    if ((experienceYears !== undefined && experienceMonths !== undefined) || (experienceYears === undefined && experienceMonths === undefined)) {
+      missingFields.push('Only one of experienceYears or experienceMonths should be provided');
     }
 
     if (missingFields.length > 0) {
       const errorMessage = `Missing required fields: ${missingFields.join(', ')}`;
       console.warn(`⚠️ Validation Failed: ${errorMessage}`);
-      const validationError = new Error(errorMessage);
-      validationError.statusCode = 400;
-      throw validationError;
+      throw new Error(errorMessage);
     }
 
     // ✅ Validate input using Joi schema
-    // This ensures that the worker data follows all validation rules
     const { error, value } = workerSchema.validate({ 
       username, password, name, email, phoneNumber, profilePicture, skills, experienceYears, experienceMonths 
     });
 
     if (error) {
       console.error('❌ Validation failed:', error.details[0].message);
-      const joiError = new Error(`Validation error: ${error.details[0].message}`);
-      joiError.statusCode = 400;
-      throw joiError;
+      throw new Error(`Validation error: ${error.details[0].message}`);
     }
 
-    // 🚀 Log the cleaned and validated data
     console.log('✅ Validated data (after Joi processing):', value);
 
-    // ✅ Check if worker already exists (check email, username, and phoneNumber)
+    // ✅ Check for duplicate worker (email, username, phoneNumber must be unique)
     const existingWorker = await prisma.worker.findFirst({
       where: {
-        OR: [{ email: value.email }, { username: value.username }, { phoneNumber: value.phoneNumber }],
+        OR: [
+          { email: value.email },
+          { username: value.username },
+          { phoneNumber: value.phoneNumber },
+        ],
       },
     });
 
     if (existingWorker) {
-      const duplicateError = new Error('A worker with this email, username, or phone number already exists.');
-      duplicateError.statusCode = 400;
-      throw duplicateError;
+      throw new Error('A worker with this email, username, or phone number already exists.');
     }
 
     // 🚀 Prepare worker data for insertion
@@ -80,20 +78,18 @@ const createWorker = async (username, name, password, email, phoneNumber, profil
       password: value.password, // 🚩 Make sure to hash this in production
       email: value.email,
       phoneNumber: value.phoneNumber,
-      profilePicture: value.profilePicture, // ✅ Required
-      skills: value.skills, // ✅ At least one skill is required
-      experienceYears: value.experienceYears, // ✅ Required
-      experienceMonths: value.experienceMonths, // ✅ Required (Must be between 0-11)
+      profilePicture: value.profilePicture,
+      skills: value.skills,
+      experienceYears: value.experienceYears,
+      experienceMonths: value.experienceMonths,
     };
 
-    // 🚀 Proceed to create new worker in the database
+    // 🚀 Insert into the database
     const newWorker = await prisma.worker.create({ data: workerData });
-
     console.log('✅ New worker created successfully:', newWorker);
     return newWorker;
   } catch (error) {
     console.error('❌ Error creating worker:', error.message);
-    if (!error.statusCode) error.statusCode = 500;
     throw error;
   }
 };

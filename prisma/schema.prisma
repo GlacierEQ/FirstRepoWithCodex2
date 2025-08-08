@@ -1,0 +1,121 @@
+generator client { // ✅ Generates JavaScript client for Prisma
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "postgresql" // ✅ Using PostgreSQL (change if needed)
+  url          = env("DATABASE_URL") // ✅ Loads DB connection string from .env
+  relationMode = "prisma" // ✅ Enables Prisma-style relations
+}
+
+/// ⭐ Enum for task status values
+enum TaskStatus { 
+  open
+  assigned
+  completed
+  cancelled
+}
+
+/// ⭐ Enum for task categories
+enum TaskCategory {
+  appliance_repair
+  carpentry
+  cooking
+  house_cleaning
+  dj_services
+  electricity
+  furniture_assembly
+  furniture_repair
+  home_repairs
+  IT_support
+  moving_transportation
+  childcare_babysitting
+  nursing_care
+  house_painting
+  room_painting
+  pest_control
+  pet_care
+  plumbing
+  gardening
+  pool_cleaning
+  other
+}
+
+/// The `Client` model represents users who create tasks.
+/// Clients can create multiple tasks, but do not complete them.
+model Client {
+  id             String   @id @default(uuid())           // ✅ Unique identifier
+  auth0Id        String?  @unique                        // ⭐ External ID from Auth0 used for authentication
+  username       String   @unique
+  name           String
+  email          String   @unique
+  phoneNumber    String
+  profilePicture String?
+  role           String   @default("client")             // ✅ Default role for clients
+  isAdmin        Boolean  @default(false)                // 🚩 Admin field
+
+  tasks          Task[]                                  // ✅ One-to-Many: Clients can create multiple tasks
+}
+
+/// The `Worker` model represents professionals who complete tasks.
+model Worker {
+  id              String   @id @default(uuid())          // ✅ Unique identifier
+  auth0Id         String?  @unique                       // ✅ NEW for Auth0 support!
+  username        String   @unique
+  name            String
+  email           String   @unique
+  phoneNumber     String
+  profilePicture  String?
+  skills          String[]                               // ✅ List of skills (e.g., ["Plumbing", "Carpentry"])
+  experienceYears Int?                                   // ✅ Must have years OR months (not both)
+  experienceMonths Int?
+  role            String   @default("worker")            // ✅ Default role for workers
+
+  tasks           Task[]                                 // ✅ One-to-Many: Workers can complete multiple tasks
+}
+
+/* ❌ Experience Constraint NOT Supported in Prisma
+   ➤ Must be enforced manually in PostgreSQL after Prisma migration.
+
+   Example SQL:
+   ALTER TABLE "Worker" 
+   ADD CONSTRAINT check_experience 
+   CHECK ((experienceYears IS NOT NULL OR experienceMonths IS NOT NULL) 
+   AND NOT (experienceYears IS NOT NULL AND experienceMonths IS NOT NULL));
+*/
+
+/// The `Task` model represents jobs created by clients and completed by workers.
+model Task {
+  id           String     @id @default(uuid())           // ✅ Unique identifier for tasks
+  title        String
+  description  String
+  category     TaskCategory                              // ✅ Enum-based task category
+  status       TaskStatus  @default(open)                // ⭐ Use ENUM for consistency
+  price        Float                                       // ✅ Estimated cost
+  dueDate      DateTime                                   // ✅ Deadline
+  clientId     String                                     // ⭐ FK to Client.id (creator)
+  workerId     String?                                    // ✅ FK to Worker.id (nullable)
+  createdAt    DateTime   @default(now())                // ✅ Creation timestamp
+  updatedAt    DateTime   @updatedAt()                   // ✅ Update timestamp
+
+  /// ✅ Relationships
+  client       Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)  // ⭐ Link to creator
+  worker       Worker?    @relation(fields: [workerId], references: [id], onDelete: Cascade)  // Optional assignment
+
+  /// ✅ Indexes
+  @@index([clientId])  // ✅ Faster lookups by client
+  @@index([workerId])  // ✅ Faster lookups by worker
+}
+
+/* ✅ Final Notes:
+🔹 Roles: Default set via Prisma.
+🔹 Indexes: Improve query performance.
+🔹 Foreign Keys: Enforce relationships via Prisma.
+🔹 Cascade: Deletes all tasks if client is removed.
+
+🧠 Example:
+If "task789" has clientId = "abc123", and "abc123" matches a Client.id,
+then Prisma links "task789" → belongs to → that Client.
+
+🔥 `onDelete: Cascade` means if the client is deleted, so are their tasks!
+*/

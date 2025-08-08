@@ -9,7 +9,7 @@ const winstonLogger = winston.createLogger({
   format: winston.format.json(),
 
   // Meta information to add to each log message
-  defaultMeta: { service: 'booking-api' }, // Updated for the Booking API
+  defaultMeta: { service: 'tasks2do-api' },// Updated for the Tasks2Do API tasks2do-api' “Every log from this logger will have a field service whose value is 'tasks2do-api'.”
 });
 
 // Add console logging during development

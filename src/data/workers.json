@@ -1,0 +1,59 @@
+{
+  "workers": [
+    {
+      "username": "jbolivar",
+      "name": "Junier Bolivar",
+      "email": "junierba@gmail.com",
+      "phoneNumber": "0031-020-341-1691",
+      "profilePicture": "https://example.com/your-profile-pic.jpg",
+      "skills": ["Furniture Assembly"],
+      "experienceYears": 3,
+      "role": "admin"
+    },
+    {
+      "username": "plumberjoe",
+      "name": "Joe Carter",
+      "email": "joeplumber@example.com",
+      "phoneNumber": "321-654-0987",
+      "profilePicture": "https://example.com/plumberjoe.jpg",
+      "skills": ["Plumbing", "Pipe Repair"],
+      "experienceYears": 8
+    },
+    {
+      "username": "electricianlisa",
+      "name": "Lisa Chen",
+      "email": "lisachen@example.com",
+      "phoneNumber": "321-654-0988",
+      "profilePicture": "https://example.com/electricianlisa.jpg",
+      "skills": ["Electrical Wiring", "Panel Installation"],
+      "experienceMonths": 7
+    },
+    {
+      "username": "handymanmike",
+      "name": "Mike Johnson",
+      "email": "handymanmike@example.com",
+      "phoneNumber": "321-654-0989",
+      "profilePicture": "https://example.com/handymanmike.jpg",
+      "skills": ["Furniture Assembly", "Drywall Repair"],
+      "experienceYears": 3
+    },
+    {
+      "username": "carpenteralice",
+      "name": "Alice Brown",
+      "email": "alicebrown@example.com",
+      "phoneNumber": "321-654-0990",
+      "profilePicture": "https://example.com/carpenteralice.jpg",
+      "skills": ["Carpentry", "Woodworking"],
+      "experienceMonths": 10
+    },
+    {
+      "username": "gardenerbob",
+      "name": "Bob Green",
+      "email": "bobgreen@example.com",
+      "phoneNumber": "321-654-0991",
+      "profilePicture": "https://example.com/gardenerbob.jpg",
+      "skills": ["Landscaping", "Lawn Care"],
+      "experienceYears": 4
+    }
+  ]
+}

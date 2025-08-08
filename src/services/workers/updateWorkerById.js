@@ -1,28 +1,31 @@
-import { PrismaClient } from '@prisma/client'; // Import Prisma Client
+import { PrismaClient } from '@prisma/client'; // ⭐ Import Prisma Client
 
-const prisma = new PrismaClient(); // Initialize Prisma Client
+const prisma = new PrismaClient(); // ⭐ Initialize Prisma Client
 
 /**
- * Updates a worker by their ID.
+ * 🔄 Updates a worker by their ID with authorization logic.
+ *
  * @param {string} id - The ID of the worker to update.
  * @param {object} updatedFields - The fields to update (e.g., { name: "New Name" }).
+ * @param {object} currentUser - The user making the request.
  * @returns {object|null} - The updated worker object or null if not found.
  */
-const updateWorkerById = async (id, updatedFields) => {
+const updateWorkerById = async (id, updatedFields, currentUser) => {
   try {
-    // ✅ Define allowed fields to update for workers
+    // ⭐ Define allowed fields
     const allowedFields = [
-      "username",
-      "name",
-      "password",
-      "email",
-      "phoneNumber",
-      "profilePicture",
-      "skills",
-      "experienceYears",
-      "experienceMonths"
+      'username',
+      'name',
+      'password',
+      'email',
+      'phoneNumber',
+      'profilePicture',
+      'skills',
+      'experienceYears',
+      'experienceMonths',
     ];
-    
+
+    // ⭐ Filter only allowed fields
     const filteredFields = Object.keys(updatedFields)
       .filter((key) => allowedFields.includes(key))
       .reduce((obj, key) => {
@@ -31,17 +34,27 @@ const updateWorkerById = async (id, updatedFields) => {
       }, {});
 
     if (Object.keys(filteredFields).length === 0) {
-      throw new Error("No valid fields provided for update.");
+      throw new Error('No valid fields provided for update.');
     }
 
-    // ✅ Check if the worker exists in the database
+    // ⭐ Find existing worker
     const existingWorker = await prisma.worker.findUnique({ where: { id } });
     if (!existingWorker) {
       console.warn(`⚠️ Worker with ID ${id} not found.`);
       return null;
     }
 
-    // ✅ Update the worker with only the allowed fields
+    // ⭐ Authorization: Only the worker themselves or an admin can update
+    const isSelf = currentUser?.id === existingWorker.id;
+    const isAdmin = currentUser?.isAdmin === true;
+
+    if (!isSelf && !isAdmin) {
+      const error = new Error('🚫 You are not authorized to update this worker.');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    // ⭐ Proceed to update
     const updatedWorker = await prisma.worker.update({
       where: { id },
       data: filteredFields,
@@ -50,14 +63,13 @@ const updateWorkerById = async (id, updatedFields) => {
     console.log(`✅ Worker with ID ${id} successfully updated:`, updatedWorker);
     return updatedWorker;
   } catch (error) {
-    // 🚩 Handle Unique Constraint Error (e.g., duplicate email or username)
-    if (error.code === "P2002") {
+    if (error.code === 'P2002') {
       console.error(`⚠️ Unique constraint error:`, error.meta.target);
       throw new Error(`A worker with this ${error.meta.target} already exists.`);
     }
 
     console.error(`❌ Error updating worker with ID ${id}:`, error.message);
-    throw new Error("Failed to update worker.");
+    throw new Error('Failed to update worker.');
   }
 };
 

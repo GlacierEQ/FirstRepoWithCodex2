@@ -1,5 +1,8 @@
 import express from 'express';
-import authMiddleware from '../middleware/authMiddleware.js';
+
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient(); // 🚩 Required to query DB inside this route
+import authMiddleware from '../middleware/advancedAuth.js'; // ✅ Import Auth0 Middleware
 import NotFoundError from '../errors/NotFoundError.js';
 
 // ✅ Import worker services
@@ -13,7 +16,8 @@ const workersRouter = express.Router();
 
 /**
  * @route GET /workers
- * @desc Fetch all workers with optional filters
+ * @desc Fetch all workers with optional filters (username, email)
+ * @public ✅ No authentication required
  */
 workersRouter.get('/', async (req, res, next) => {
   try {
@@ -28,7 +32,8 @@ workersRouter.get('/', async (req, res, next) => {
 
 /**
  * @route GET /workers/:id
- * @desc Fetch a worker by ID
+ * @desc Fetch a worker by   ...... desc=description in JSDoc tags
+ * @public ✅ No authentication required
  */
 workersRouter.get('/:id', async (req, res, next) => {
   try {
@@ -46,15 +51,27 @@ workersRouter.get('/:id', async (req, res, next) => {
 
 /**
  * @route POST /workers
- * @desc Create a new worker
+ * @desc Create a new worker (User Registration)
+ * @public ✅ No authentication required (New workers must register first)
  */
 workersRouter.post('/', async (req, res, next) => {
+  // ❌ No authMiddleware needed
   try {
     console.log('📥 Incoming request body:', req.body);
 
-    const { username, password, name, email, phoneNumber, profilePicture, skills, experienceYears, experienceMonths } = req.body;
-
-    const newWorker = await createWorker(username, name, password, email, phoneNumber, profilePicture, skills, experienceYears, experienceMonths);
+    const { username, password, name, email, phoneNumber, profilePicture, skills, experienceYears, experienceMonths } =
+      req.body;
+    const newWorker = await createWorker(
+      username,
+      name,
+      password,
+      email,
+      phoneNumber,
+      profilePicture,
+      skills,
+      experienceYears,
+      experienceMonths
+    );
 
     res.status(201).json({
       message: '✅ Worker created successfully!',
@@ -69,12 +86,35 @@ workersRouter.post('/', async (req, res, next) => {
 /**
  * @route PATCH /workers/:id
  * @desc Update a worker by ID
+ * @protected 🔒 Requires authentication & ownership check
  */
+
+// ⭐️ PATCH /workers/:id - Update Worker Profile (Only by Owner)
 workersRouter.patch('/:id', authMiddleware, async (req, res, next) => {
   try {
     const { id } = req.params;
-    const updatedFields = req.body;
+    const userSub = req.auth.payload.sub; // 🔐⭐️ Extract Auth0 user ID (sub)
 
+    console.log(`🔑 Authenticated User: ${userSub}, Requesting Update for Worker ID: ${id}`);
+
+    // ⭐️ Fetch the worker whose auth0Id matches the authenticated user's sub
+    const currentUser = await prisma.worker.findUnique({
+      where: { auth0Id: userSub },
+    });
+    // 🔒 Here starts the Ownership Check:
+    // 🚨 Security Fix: Prevent unauthorized modifications!
+    // - Ensure that the logged-in user (Auth0 ID) **matches** the worker ID being modified.
+    // - If they don’t match, return a `403 Forbidden` response to prevent unauthorized access.
+    // ⭐️ Ownership check — only allow if user exists and owns the profile
+    // 💡 Only allow the logged-in user to update/delete *their own* profile
+
+    if (!currentUser || currentUser.id !== id) {
+      return res.status(403).json({
+        message: '❌ Unauthorized: You can only update your own profile!',
+      });
+    }
+
+    const updatedFields = req.body;
     const updatedWorker = await updateWorkerById(id, updatedFields);
 
     if (!updatedWorker) throw new NotFoundError('Worker', id);
@@ -89,13 +129,35 @@ workersRouter.patch('/:id', authMiddleware, async (req, res, next) => {
   }
 });
 
+
+
 /**
  * @route DELETE /workers/:id
  * @desc Delete a worker by ID
+ * @protected 🔒 Requires authentication & ownership check
  */
+// ⭐️ DELETE /workers/:id - Delete Worker Profile (Only by Owner)
 workersRouter.delete('/:id', authMiddleware, async (req, res, next) => {
   try {
     const { id } = req.params;
+    const userSub = req.auth.payload.sub; // 🔐⭐️ Extract Auth0 user ID (sub)
+
+    console.log(`🔑 Authenticated User: ${userSub}, Attempting Deletion for Worker ID: ${id}`);
+
+    // ⭐️ Fetch the worker whose auth0Id matches the authenticated user's sub
+    const currentUser = await prisma.worker.findUnique({
+      where: { auth0Id: userSub },
+    });
+    // 🔒 Here starts the Ownership Check:
+    // 🚨 Security Fix: Ensure worker can only delete their own profile
+    // ⭐️ Ownership check — only allow if user exists and owns the profile
+    // 💡 Only allow the logged-in user to update/delete *their own* profile
+
+    if (!currentUser || currentUser.id !== id) {
+      return res.status(403).json({
+        message: '❌ Unauthorized: You can only delete your own profile!',
+      });
+    }
 
     const deletedWorker = await deleteWorkerById(id);
 
@@ -112,3 +174,4 @@ workersRouter.delete('/:id', authMiddleware, async (req, res, next) => {
 });
 
 export default workersRouter;
+

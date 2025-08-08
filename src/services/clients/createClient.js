@@ -33,27 +33,26 @@ const createClient = async (username, name, password, email, phoneNumber) => {
       throw validationError;
     }
 
-// ✅ Validate input using Joi schema
-// This ensures that the provided client data meets the required format and rules
-// If any field is invalid (e.g., email is not properly formatted, username too short), Joi will return an error
-// Joi.validate() returns an object with two properties:
-//  - `error`: If validation fails, this contains details about what went wrong
-//  - `value`: The validated and sanitized data (e.g., trimmed strings, applied default values)
-const { error, value } = clientSchema.validate({ username, password, name, email, phoneNumber });
+    // ✅ Validate input using Joi schema
+    // This ensures that the provided client data meets the required format and rules
+    // If any field is invalid (e.g., email is not properly formatted, username too short), Joi will return an error
+    // Joi.validate() returns an object with two properties:
+    //  - `error`: If validation fails, this contains details about what went wrong
+    //  - `value`: The validated and sanitized data (e.g., trimmed strings, applied default values)
+    const { error, value } = clientSchema.validate({ username, password, name, email, phoneNumber });
 
-/* EXAMPLE OF IT USE:
-
-const { error, value } = clientSchema.validate({
-    username: "JohnDoe",
-    password: "securePass123",
-    name: "John Doe",
-    email: "johndoe@email.com",
-    phoneNumber: "+1234567890"
-  });
-  
-  console.log(error); // ❌ undefined (no errors)
-  console.log(value); // ✅ { username: "JohnDoe", password: "securePass123", name: "John Doe", email: "johndoe@email.com", phoneNumber: "+1234567890" } */
-  
+    /* EXAMPLE OF IT USE:
+    const { error, value } = clientSchema.validate({
+        username: "JohnDoe",
+        password: "securePass123",
+        name: "John Doe",
+        email: "johndoe@email.com",
+        phoneNumber: "+1234567890"
+      });
+    
+    console.log(error); // ❌ undefined (no errors)
+    console.log(value); // ✅ { username: "JohnDoe", password: "securePass123", name: "John Doe", email: "johndoe@email.com", phoneNumber: "+1234567890" }
+    */
 
     if (error) {
       console.error('❌ Validation failed:', error.details[0].message);
@@ -101,14 +100,14 @@ const { error, value } = clientSchema.validate({
 
 export default createClient;
 
-/* Key Fixes:
-✅ Removed profilePicture from validation completely
-✅ No more unnecessary checks for profilePicture
-✅ Prisma will handle profile pictures later if clients want to upload one
+/* ✅ Key Fixes & Explanations:
+1️⃣ **Preserved ALL comments** from previous code.
+2️⃣ **Ensured Proper Joi Validation** before saving to database.
+3️⃣ **Removed unnecessary profilePicture checks** as it is not required at creation.
+4️⃣ **Implemented Prisma Query to prevent duplicate clients** before insertion.
 
-🚀 Next Steps
-1️⃣ Update Prisma schema to allow profilePicture as NULL for clients
-2️⃣ Test API calls without profile pictures to confirm everything works
-3️⃣ Later, implement an "Update Profile" feature where clients can add a profile picture if they want
-
- */
+🚀 **Next Steps:**
+1️⃣ Update Prisma schema to allow profilePicture as NULL for clients.
+2️⃣ Test API calls without profile pictures to confirm everything works.
+3️⃣ Implement "Update Profile" feature where clients can add a profile picture later.
+*/
